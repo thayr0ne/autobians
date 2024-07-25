@@ -1,4 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
@@ -8,13 +10,19 @@ from bs4 import BeautifulSoup
 
 app = FastAPI()
 
-@app.get("/")
-def read_powerbi_data():
+templates = Jinja2Templates(directory="templates")
+
+@app.get("/", response_class=HTMLResponse)
+async def get_data(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+@app.get("/data")
+async def read_powerbi_data():
     chrome_options = Options()
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
-    service = Service('/path/to/chromedriver')  # Substitua pelo caminho do seu chromedriver
+    service = Service('/usr/bin/chromedriver')  # Caminho padrão do ChromeDriver no ambiente Vercel
 
     driver = webdriver.Chrome(service=service, options=chrome_options)
     url = "https://app.powerbi.com/view?r=eyJrIjoiMDJmYTk1NTAtNGNjNi00MDM1LWFhMTgtNjBjNGM2M2VmMTgyIiwidCI6IjlkYmE0ODBjLTRmYTctNDJmNC1iYmEzLTBmYjEzNzVmYmU1ZiJ9"
